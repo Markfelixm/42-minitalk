@@ -6,19 +6,16 @@
 /*   By: marmulle <marmulle@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/30 13:12:02 by marmulle          #+#    #+#             */
-/*   Updated: 2023/01/31 14:12:00 by marmulle         ###   ########.fr       */
+/*   Updated: 2023/02/02 18:17:45 by marmulle         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/minitalk.h"
 
-void	handle_confirmation(int signum, siginfo_t *siginfo, void *ucontext)
+void	handle_confirmation(int signum)
 {
 	(void) signum;
-	(void) siginfo; // TODO: check that PIDs match
-	(void) ucontext;
-	ft_printf("client - message confirmed\n");
-	exit(0);
+	exit(ft_printf("client - message confirmed\n"));
 }
 
 bool	send_message(int pid, char *message, size_t message_len)
@@ -38,7 +35,7 @@ bool	send_message(int pid, char *message, size_t message_len)
 				signal = SIGUSR2;
 			if (kill(pid, signal) == -1)
 				return (false);
-			usleep(128);
+			usleep(96);
 		}
 		cursor++;
 	}
@@ -47,14 +44,10 @@ bool	send_message(int pid, char *message, size_t message_len)
 
 int	main(int argc, char **argv)
 {
-	struct sigaction	sa;
-	size_t				message_len;
+	size_t	message_len;
 
-	sa.sa_sigaction = handle_confirmation;
-	sigemptyset(&sa.sa_mask);
-	sigaddset(&sa.sa_mask, SIGUSR2);
-	if (sigaction(SIGUSR2, &sa, NULL))
-		return (ft_printf("client - sigaction SIGUSR2 error\n"));
+	if (signal(SIGUSR2, handle_confirmation) == SIG_ERR)
+		return (ft_printf("client - signal SIGUSR2 error\n"));
 	if (argc != 3)
 		return (ft_printf("client - invalid arguments\n"));
 	message_len = ft_strlen(argv[2]);
